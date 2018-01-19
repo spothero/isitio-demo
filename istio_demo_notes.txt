@@ -1,0 +1,23 @@
+watch -n1 "kubectl get po --all-namespaces"
+
+kubectl port-forward -n istio-system $(kubectl get pod -n istio-system -l app=jaeger -o jsonpath='{.items[0].metadata.name}') 16686:16686 &
+kubectl port-forward -n istio-system $(kubectl -n istio-system get pod -l app=prometheus -o jsonpath='{.items[0].metadata.name}') 9090:9090 &
+kubectl port-forward -n istio-system $(kubectl -n istio-system get pod -l app=grafana -o jsonpath='{.items[0].metadata.name}') 3000:3000 &
+kubectl port-forward -n istio-system $(kubectl -n istio-system get pod -l app=servicegraph -o jsonpath='{.items[0].metadata.name}') 8088:8088 &
+
+
+# Show prometheus / default stats
+# istio_request_count
+# istio_request_count{destination_service="productpage.default.svc.cluster.local"}
+# istio_request_count{destination_service="reviews.default.svc.cluster.local", destination_version="v3"}
+# rate(istio_request_count{destination_service=~"productpage.*", response_code="200"}[5m])
+
+
+# Prom Stats, new metric we created
+# istio_double_request_count
+
+kubectl -n istio-system logs -f $(kubectl -n istio-system get pods -l istio=mixer -o jsonpath='{.items[0].metadata.name}') mixer | grep \"instance\":\"newlog.logentry.istio-system\"
+
+# MongoDB Stats
+# istio_mongo_received_bytes
+# envoy_mongo_mongo_collection_ratings_query_total
